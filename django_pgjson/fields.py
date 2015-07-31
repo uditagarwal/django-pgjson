@@ -17,14 +17,20 @@ from django.utils import six
 
 if django.get_version() >= "1.7":
     from django.utils.module_loading import import_string
-else:
+elif django.get_version() == "1.6":
     from django.utils.module_loading import import_by_path as import_string
+else:
+    from django.core.serializers.json import DjangoJSONEncoder
 
 
 def get_encoder_class():
     encoder_cls_path = getattr(settings, "PGJSON_ENCODER_CLASS",
                                "django.core.serializers.json.DjangoJSONEncoder")
-    return import_string(encoder_cls_path)
+
+    if django.get_version() < "1.6":
+        return DjangoJSONEncoder
+    else:
+        return import_string(encoder_cls_path)
 
 
 class JsonAdapter(psycopg2.extras.Json):
